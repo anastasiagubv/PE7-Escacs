@@ -137,6 +137,7 @@ public class escacs {
     }
 
     public void validateMove(String move, boolean whiteTurn) {
-
+        // Aquesta funció validarà la jugada introduïda
+        // Implementació futura
     }
 }
