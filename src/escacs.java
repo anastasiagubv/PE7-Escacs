@@ -109,35 +109,143 @@ public class escacs {
         if (whiteTurn) {
             System.out.println("\n" + playerWhite + ", és el teu torn (blanques).");
             System.out.println("Escriu 'Abandonar' per sortir del joc.");
-            System.out.print("Introdueix la teva jugada: ");
+            System.out.print("Introdueix la teva jugada. Format 'e2 e4' > ");
             move = sc.nextLine();
 
             if (move.equalsIgnoreCase("Abandonar")) {
                 System.out.println(playerWhite + " ha abandonat el joc. " + playerBlack + " guanya!");
                 return false; // Joc acabat
             } else {
-                System.out.println(playerWhite + " ha jugat: " + move);
-                return true; // Joc continua
+                if (validateMove(move, whiteTurn)) {
+                    System.out.println(playerWhite + " ha jugat: " + move);
+                    return true; // Joc continua
+                } else {
+                    System.out.println("Moviment invàlid. Torna-ho a intentar.");
+                    return getMove(whiteTurn); // Tornar a demanar la jugada
+                }
             }
 
         } else {
             System.out.println("\n" + playerBlack + ", és el teu torn (negres).");
             System.out.println("Escriu 'Abandonar' per sortir del joc.");
-            System.out.print("Introdueix la teva jugada: ");
+            System.out.print("Introdueix la teva jugada. Format 'e2 e4' > ");
             move = sc.nextLine();
 
             if (move.equalsIgnoreCase("Abandonar")) {
                 System.out.println(playerBlack + " ha abandonat el joc. " + playerWhite + " guanya!");
                 return false; // Joc acabat
             } else {
-                System.out.println(playerBlack + " ha jugat: " + move);
-                return true; // Joc continua
+                if (validateMove(move, whiteTurn)) {
+                    System.out.println(playerBlack + " ha jugat: " + move);
+                    return true; // Joc continua
+                } else {
+                    System.out.println("Moviment invàlid. Torna-ho a intentar.");
+                    return getMove(whiteTurn); // Tornar a demanar la jugada
+                }
             }
         }
     }
 
-    public void validateMove(String move, boolean whiteTurn) {
-        // Aquesta funció validarà la jugada introduïda
+    public boolean validateMove(String move, boolean whiteTurn) {
+
+        // Validar format
+        String[] parts = move.split(" ");
+
+        if (parts.length != 2) {
+            System.out.println("Error. Introdueix la jugada en format 'e2 e4'.");
+            return false;
+        }
+
+        // Separar origen i destí
+        String origin = parts[0]; // e2
+        String destination = parts[1]; // e4
+
+        // Validar que cada part tingui 2 caràcters
+        if (origin.length() != 2 || destination.length() != 2) {
+            System.out.println("Error. Introdueix la jugada en format 'e2 e4'.");
+            return false;
+        }
+
+        // Convertir coordenades
+        int[] originCoords = convertCoordinates(origin);
+        int[] destCoords = convertCoordinates(destination);
+
+        if (originCoords == null || destCoords == null) {
+            System.out.println("Error. Coordenades invàlides.");
+            return false;
+        }
+
+        int originRow = originCoords[0];
+        int originCol = originCoords[1];
+        int destRow = destCoords[0];
+        int destCol = destCoords[1];
+
+        // Validar que hi ha una peça a l'origen
+        char piece = board[originRow][originCol];
+        if (piece == '.') {
+            System.out.println("ERROR: No hi ha cap peça a " + origin);
+            return false;
+        }
+
+        // Validar que la peça és del color correcte
+        if (whiteTurn && Character.isLowerCase(piece)) {
+            System.out.println("ERROR: No pots moure peces negres.");
+            return false;
+        }
+        if (!whiteTurn && Character.isUpperCase(piece)) {
+            System.out.println("ERROR: No pots moure peces blanques.");
+            return false;
+        }
+        return true;
+    }
+
+    public int[] convertCoordinates(String coord) {
+        // Convertir coordenades d'escacs a índexs d'array
+        char file = coord.charAt(0); // lletra
+        char rank = coord.charAt(1); // número
+
+        // Validar que la columna sigui entre 'a' i 'h'
+        if (file < 'a' || file > 'h' || rank < '1' || rank > '8') {
+            return null; // Coordenades invàlides
+        }
+
+        // Validar que la fila sigui entre '1' i '8'
+        if (file < 'a' || file > 'h' || rank < '1' || rank > '8') {
+            return null; // Coordenades invàlides
+        }
+
+        int row = Character.getNumericValue(rank) - 1; // Fila (0-7)
+        int col = file - 'a'; // Columna (0-7)
+
+        return new int[] { row, col };  
+    }
+
+    public void updateBoard(String move, boolean whiteTurn) {
+        // Aquesta funció actualitzarà el tauler segons la jugada
         // Implementació futura
+    }
+
+    public void validatePeo() {
+
+    }
+
+    public void validateTorre() {
+
+    }
+
+    public void validateCavall() {
+
+    }
+
+    public void validateAlfil() {
+
+    }
+
+    public void validateReina() {
+
+    }
+
+    public void validateRei() {
+
     }
 }
