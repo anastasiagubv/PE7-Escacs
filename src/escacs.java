@@ -90,11 +90,11 @@ public class escacs {
         players = new ArrayList<String>();
 
         // Demanar noms dels jugadors
-        System.out.println("\nIntrodueix el nom del jugador 1 (blanques): ");
+        System.out.print("\nIntrodueix el nom del jugador 1 (blanques): ");
         playerWhite = sc.nextLine();
         players.add(playerWhite);
 
-        System.out.println("Introdueix el nom del jugador 2 (negres): ");
+        System.out.print("Introdueix el nom del jugador 2 (negres): ");
         playerBlack = sc.nextLine();
         players.add(playerBlack);
 
@@ -109,7 +109,7 @@ public class escacs {
         if (whiteTurn) {
             System.out.println("\n" + playerWhite + ", és el teu torn (blanques).");
             System.out.println("Escriu 'Abandonar' per sortir del joc.");
-            System.out.print("Introdueix la teva jugada. Format 'e2 e4' > ");
+            System.out.print("Introdueix la teva jugada. Format 'e2 e4': ");
             move = sc.nextLine();
 
             if (move.equalsIgnoreCase("Abandonar")) {
@@ -128,7 +128,7 @@ public class escacs {
         } else {
             System.out.println("\n" + playerBlack + ", és el teu torn (negres).");
             System.out.println("Escriu 'Abandonar' per sortir del joc.");
-            System.out.print("Introdueix la teva jugada. Format 'e2 e4' > ");
+            System.out.print("Introdueix la teva jugada. Format 'e2 e4': ");
             move = sc.nextLine();
 
             if (move.equalsIgnoreCase("Abandonar")) {
@@ -147,7 +147,6 @@ public class escacs {
     }
 
     public boolean validateMove(String move, boolean whiteTurn) {
-
         // Validar format
         String[] parts = move.split(" ");
 
@@ -196,8 +195,44 @@ public class escacs {
             System.out.println("ERROR: No pots moure peces blanques.");
             return false;
         }
+
+        // Validar moviment segons la peça
+        if(!validatePieceMovement(piece, originRow, originCol, destRow, destCol)) {
+            return false;
+        }
+
+        // Actualitzar el tauler
+        updateBoard(move);
         return true;
     }
+
+    public boolean validatePieceMovement(char piece, int originRow, int originCol, int destRow, int destCol) {
+        // Validar moviment segons la peça
+        switch (Character.toUpperCase(piece)) {
+            // Peó
+            case 'P':
+                return validatePeo(originRow, originCol, destRow, destCol);
+            // Torre
+            case 'T':
+                return validateTorre(originRow, originCol, destRow, destCol);
+            // Cavall
+            case 'C':
+                return validateCavall(originRow, originCol, destRow, destCol);
+            // Alfil
+            case 'A':
+                return validateAlfil(originRow, originCol, destRow, destCol);
+            // Reina
+            case 'Q':
+                return validateReina(originRow, originCol, destRow, destCol);
+            // Rei
+            case 'K':
+                return validateRei(originRow, originCol, destRow, destCol);
+            default:
+                System.out.println("ERROR: Peça desconeguda.");
+                return false;
+        }
+    }
+
 
     public int[] convertCoordinates(String coord) {
         // Convertir coordenades d'escacs a índexs d'array
@@ -217,35 +252,88 @@ public class escacs {
         int row = Character.getNumericValue(rank) - 1; // Fila (0-7)
         int col = file - 'a'; // Columna (0-7)
 
-        return new int[] { row, col };  
+        return new int[] { row, col };
     }
 
-    public void updateBoard(String move, boolean whiteTurn) {
-        // Aquesta funció actualitzarà el tauler segons la jugada
-        // Implementació futura
+    public void updateBoard(String move) {
+        String[] parts = move.split(" ");
+        String origin = parts[0];
+        String destination = parts[1];
+
+        int[] originCoords = convertCoordinates(origin);
+        int[] destCoords = convertCoordinates(destination);
+
+        int originRow = originCoords[0];
+        int originCol = originCoords[1];
+        int destRow = destCoords[0];
+        int destCol = destCoords[1];
+
+        // Moure la peça
+        board[destRow][destCol] = board[originRow][originCol];
+        board[originRow][originCol] = '.';
     }
 
-    public void validatePeo() {
-
+    public boolean validatePeo(int originRow, int originCol, int destRow, int destCol) {
+        return true;
     }
 
-    public void validateTorre() {
+    public boolean validateTorre(int originRow, int originCol, int destRow, int destCol) {
+        // Moviment en línia recta horitzontal  (mateixa fila)
+        if (originRow == destRow) {
+            // Comprovar que el camí està lliure
+            int start = Math.min(originCol, destCol) + 1;
+            int end = Math.max(originCol, destCol);
 
+            for (int col = start; col < end; col++) {
+                if (board[originRow][col] != '.') {
+                    System.out.println("ERROR: Hi ha una peça en el camí horitzontal.");
+                    return false;
+                }
+            }
+            return true;
+
+            // Moviment en línia recta vertical (mateixa columna)
+        } else if (originCol == destCol) {
+            // Comprovar que el camí està lliure
+            int start = Math.min(originRow, destRow) + 1;
+            int end = Math.max(originRow, destRow);
+
+            for (int row = start; row < end; row++) {
+                if (board[row][originCol] != '.') {
+                    System.out.println("ERROR: Hi ha una peça en el camí vertical.");
+                    return false;
+                }
+            }
+            return true;
+
+        } else {
+            System.out.println("ERROR: La torre només es pot moure en línea recta.");
+            return false;
+        }
     }
 
-    public void validateCavall() {
-
+    public boolean validateCavall(int originRow, int originCol, int destRow, int destCol) {
+        return true;
     }
 
-    public void validateAlfil() {
-
+    public boolean validateAlfil(int originRow, int originCol, int destRow, int destCol) {
+        return true;
     }
 
-    public void validateReina() {
-
+    public boolean validateReina(int originRow, int originCol, int destRow, int destCol) {
+        return true;
     }
 
-    public void validateRei() {
+    public boolean validateRei(int originRow, int originCol, int destRow, int destCol) {
+        int rowDiff = Math.abs(destRow - originRow);
+        int colDiff = Math.abs(destCol - originCol);
 
+        // El rei es pot moure una casella en qualsevol direcció
+        if (rowDiff > 1 || colDiff > 1) {
+            return true;
+        }
+
+        System.out.println("ERROR: El rei només es pot moure una casella en qualsevol direcció.");
+        return false;
     }
 }
