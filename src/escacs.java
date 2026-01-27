@@ -299,13 +299,13 @@ public class escacs {
                 return true;
             }
         }
-            // Captura diagonal (1 casilla en diagonal)
-            if (colDiff == 1 && destRow == originRow + direction && destPiece != '.') {
-                boolean destIsWhite = Character.isUpperCase(destPiece);
-                if (isWhite != destIsWhite) {
-                    return true;
-                }
+        // Captura diagonal (1 casilla en diagonal)
+        if (colDiff == 1 && destRow == originRow + direction && destPiece != '.') {
+            boolean destIsWhite = Character.isUpperCase(destPiece);
+            if (isWhite != destIsWhite) {
+                return true;
             }
+        }
 
         System.out.println("Error. Moviment de peó invàlid.");
         return false;
@@ -360,6 +360,42 @@ public class escacs {
     }
 
     public boolean validateAlfil(int originRow, int originCol, int destRow, int destCol) {
+        int rowDiff = Math.abs(destRow - originRow);
+        int colDiff = Math.abs(destCol - originCol);
+
+        // L'alfil es mou en diagonal (rowDiff == colDiff)
+        if (rowDiff != colDiff) {
+            System.out.println("ERROR: L'alfil només es pot moure en diagonal.");
+            return false;
+        }
+
+        // Comprovar que el camí està lliure
+        int rowDirection = 0;
+        if (destRow > originRow) {
+            rowDirection = 1;
+        } else {
+            rowDirection = -1;
+        }
+        
+        int colDirection = 0;
+        if (destCol > originCol) {
+            colDirection = 1;
+        } else {
+            colDirection = -1;
+        }
+
+        int currentRow = originRow + rowDirection;
+        int currentCol = originCol + colDirection;
+
+        while (currentRow != destRow && currentCol != destCol) {
+            if (board[currentRow][currentCol] != '.') {
+                System.out.println("ERROR: Hi ha una peça en el camí diagonal.");
+                return false;
+            }
+            currentRow += rowDirection;
+            currentCol += colDirection;
+        }
+
         return true;
     }
 
