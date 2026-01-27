@@ -197,7 +197,7 @@ public class escacs {
         }
 
         // Validar moviment segons la peça
-        if(!validatePieceMovement(piece, originRow, originCol, destRow, destCol)) {
+        if (!validatePieceMovement(piece, originRow, originCol, destRow, destCol)) {
             return false;
         }
 
@@ -232,7 +232,6 @@ public class escacs {
                 return false;
         }
     }
-
 
     public int[] convertCoordinates(String coord) {
         // Convertir coordenades d'escacs a índexs d'array
@@ -274,11 +273,46 @@ public class escacs {
     }
 
     public boolean validatePeo(int originRow, int originCol, int destRow, int destCol) {
-        return true;
+        char piece = board[originRow][originCol];
+        char destPiece = board[destRow][destCol];
+        boolean isWhite = Character.isUpperCase(piece);
+
+        int direction;
+        // Direcció del moviment del peó
+        if (isWhite) {
+            direction = -1; // Les blanques es mouen cap amunt (fila disminueix)
+        } else {
+            direction = 1; // Les negres es mouen cap avall (fila augmenta)
+        }
+        int colDiff = Math.abs(destCol - originCol);
+
+        // Movimient normal (1 casilla cap endavant)
+        if (destCol == originCol && destRow == originRow + direction && destPiece == '.') {
+            return true;
+        }
+
+        // Moviment inicial (2 casillas endavant)
+        boolean isInStartingPosition = (isWhite && originRow == 6) || (!isWhite && originRow == 1);
+
+        if (isInStartingPosition && destCol == originCol && destRow == originRow + 2 * direction) {
+            if (board[originRow + direction][originCol] == '.' && destPiece == '.') {
+                return true;
+            }
+        }
+            // Captura diagonal (1 casilla en diagonal)
+            if (colDiff == 1 && destRow == originRow + direction && destPiece != '.') {
+                boolean destIsWhite = Character.isUpperCase(destPiece);
+                if (isWhite != destIsWhite) {
+                    return true;
+                }
+            }
+
+        System.out.println("Error. Moviment de peó invàlid.");
+        return false;
     }
 
     public boolean validateTorre(int originRow, int originCol, int destRow, int destCol) {
-        // Moviment en línia recta horitzontal  (mateixa fila)
+        // Moviment en línia recta horitzontal (mateixa fila)
         if (originRow == destRow) {
             // Comprovar que el camí està lliure
             int start = Math.min(originCol, destCol) + 1;
@@ -313,7 +347,16 @@ public class escacs {
     }
 
     public boolean validateCavall(int originRow, int originCol, int destRow, int destCol) {
-        return true;
+        int rowDiff = Math.abs(destRow - originRow);
+        int colDiff = Math.abs(destCol - originCol);
+
+        // Moviment en L: 2 caselles en una direcció i 1 en l'altra
+        if ((rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2)) {
+            return true;
+        } else {
+            System.out.println("ERROR: El cavall es mou en forma de L.");
+            return false;
+        }
     }
 
     public boolean validateAlfil(int originRow, int originCol, int destRow, int destCol) {
@@ -329,11 +372,11 @@ public class escacs {
         int colDiff = Math.abs(destCol - originCol);
 
         // El rei es pot moure una casella en qualsevol direcció
-        if (rowDiff > 1 || colDiff > 1) {
+        if (rowDiff <= 1 && colDiff <= 1) {
             return true;
+        } else {
+            System.out.println("ERROR: El rei només es pot moure 1 casella.");
+            return false;
         }
-
-        System.out.println("ERROR: El rei només es pot moure una casella en qualsevol direcció.");
-        return false;
     }
 }
