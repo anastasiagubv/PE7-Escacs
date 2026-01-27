@@ -1,5 +1,6 @@
 import java.util.Scanner;
 import java.util.ArrayList;
+import java.util.InputMismatchException;
 
 public class escacs {
     static final Scanner sc = new Scanner(System.in);
@@ -12,6 +13,7 @@ public class escacs {
     // Variables globals
     private String playerWhite;
     private String playerBlack;
+    String lastWinner = null;
 
     public static void main(String[] args) {
         escacs game = new escacs();
@@ -19,32 +21,34 @@ public class escacs {
     }
 
     public void start() {
-        boolean playAgain = false;
+        boolean exit = false;
 
-        while (!playAgain) {
+        while (!exit) {
             gameBoard();
 
+            // Gestió de noms
             if (moveHistory == null) {
-                // Primera partida
                 getPlayersName();
             } else {
-                // Partides següents
-                System.out.print("\nMateixos jugadors? (s/n): ");
-                String answer = sc.nextLine();
-                if (!answer.equalsIgnoreCase("si")) {
+                if (!readBoolean("\nMateixos jugadors? (si/no): ")) {
                     getPlayersName();
+                    lastWinner = null;
+                } else if (lastWinner != null && lastWinner.equals(playerBlack)) {
+                    // Intercanvi segons guanyador
+                    String temp = playerWhite;
+                    playerWhite = playerBlack;
+                    playerBlack = temp;
+                    System.out.println("\nCanvi de torns! " + playerWhite + " (guanyador) ara porta blanques.");
                 }
             }
 
             moveHistory = new ArrayList<>();
-            playGame();
+            lastWinner = playGame();
             showMoveHistory();
 
-            System.out.print("\nVoleu jugar una altra partida? (si/no): ");
-            String answer = sc.nextLine();
-            playAgain = answer.equalsIgnoreCase("si");
+            // Control de continuïtat
+            exit = !readBoolean("\nVoleu jugar una altra partida? (si/no): ");
         }
-
         System.out.println("\nGràcies per jugar!");
         sc.close();
     }
@@ -97,31 +101,59 @@ public class escacs {
             for (int j = 0; j < 8; j++) {
                 System.out.print(board[i][j] + " ");
             }
-            System.out.println();
+            System.out.println(i + 1);
         }
+        System.out.println("  a b c d e f g h");
     }
 
-    public void playGame() {
+    public String playGame() {
         boolean gameOn = true;
         boolean whiteTurn = true;
+        String winner = null;
 
         while (gameOn) {
             printBoard();
-            gameOn = getMove(whiteTurn);
-            whiteTurn = !whiteTurn; // Canviar de torn
+
+            String currentPlayer;
+            String opponent;
+            String color;
+
+            if (whiteTurn) {
+                currentPlayer = playerWhite;
+                opponent = playerBlack;
+                color = "blanques";
+            } else {
+                currentPlayer = playerBlack;
+                opponent = playerWhite;
+                color = "negres";
+            }
+
+            String move = readString("\n" + currentPlayer + " (" + color + "), mou (ex: 'e2 e4') o 'Abandonar': ");
+
+            if (move.equalsIgnoreCase("Abandonar")) {
+                System.out.println("\n" + currentPlayer + " ha abandonat la partida.");
+                winner = opponent;
+                gameOn = false;
+            } else {
+                // Validem i actualitzem
+                if (validateMove(move, whiteTurn)) {
+                    whiteTurn = !whiteTurn;
+                } else {
+                    System.out.println("Error. Moviment invàlid. Torni a intentar-ho.");
+                }
+            }
         }
+        return winner;
     }
 
     public void getPlayersName() {
         players = new ArrayList<String>();
 
         // Demanar noms dels jugadors
-        System.out.print("\nIntrodueix el nom del jugador 1 (blanques): ");
-        playerWhite = sc.nextLine();
+        playerWhite = readString("\\nIntrodueix el nom del jugador 1 (blanques): ");
         players.add(playerWhite);
 
-        System.out.print("Introdueix el nom del jugador 2 (negres): ");
-        playerBlack = sc.nextLine();
+        playerBlack = readString("Introdueix el nom del jugador 2 (negres): ");
         players.add(playerBlack);
 
         System.out.println("\nJugadors registrats:");
@@ -129,45 +161,33 @@ public class escacs {
         System.out.println(playerBlack + " (negres)");
     }
 
-    public boolean getMove(boolean whiteTurn) {
-        String move;
+    public String readString(String prompt) {
+        boolean validInput = false;
+        String input = "";
 
-        if (whiteTurn) {
-            System.out.println("\n" + playerWhite + ", és el teu torn (blanques).");
-            System.out.println("Escriu 'Abandonar' per sortir del joc.");
-            System.out.print("Introdueix la teva jugada. Format 'e2 e4': ");
-            move = sc.nextLine();
-
-            if (move.equalsIgnoreCase("Abandonar")) {
-                System.out.println(playerWhite + " ha abandonat el joc. " + playerBlack + " guanya!");
-                return false; // Joc acabat
-            } else {
-                if (validateMove(move, whiteTurn)) {
-                    System.out.println(playerWhite + " ha jugat: " + move);
-                    return true; // Joc continua
-                } else {
-                    System.out.println("Moviment invàlid. Torna-ho a intentar.");
-                    return getMove(whiteTurn); // Tornar a demanar la jugada
-                }
+        while (!validInput) {
+            try {
+                System.out.print(prompt);
+                input = sc.nextLine();
+                validInput = true;
+            } catch (InputMismatchException e) {
+                System.out.println("Error. Entrada de dada incorrecta");
+                sc.nextLine();
             }
+        }
+        return input;
+    }
 
-        } else {
-            System.out.println("\n" + playerBlack + ", és el teu torn (negres).");
-            System.out.println("Escriu 'Abandonar' per sortir del joc.");
-            System.out.print("Introdueix la teva jugada. Format 'e2 e4': ");
-            move = sc.nextLine();
+    public boolean readBoolean(String prompt) {
+        while (true) {
+            String input = readString(prompt).trim().toLowerCase();
 
-            if (move.equalsIgnoreCase("Abandonar")) {
-                System.out.println(playerBlack + " ha abandonat el joc. " + playerWhite + " guanya!");
-                return false; // Joc acabat
+            if (input.equals("si") || input.equals("s")) {
+                return true;
+            } else if (input.equals("no") || input.equals("n")) {
+                return false;
             } else {
-                if (validateMove(move, whiteTurn)) {
-                    System.out.println(playerBlack + " ha jugat: " + move);
-                    return true; // Joc continua
-                } else {
-                    System.out.println("Moviment invàlid. Torna-ho a intentar.");
-                    return getMove(whiteTurn); // Tornar a demanar la jugada
-                }
+                System.out.println("Error: Si us plau, respon 'si' o 'no'.");
             }
         }
     }
@@ -222,11 +242,22 @@ public class escacs {
             return false;
         }
 
-        // Validar moviment segons la peça
-        if (!validatePieceMovement(piece, originRow, originCol, destRow, destCol)) {
-            return false;
-        }
+        // Validar que no es captura una peça pròpia
+        char targetPiece = board[destRow][destCol];
+        if (targetPiece != '.') {
+            boolean pieceIsWhite = Character.isUpperCase(piece);
+            boolean targetIsWhite = Character.isUpperCase(targetPiece);
 
+            if (pieceIsWhite == targetIsWhite) {
+                System.out.println("ERROR: No pots capturar una peça del teu mateix color.");
+                return false;
+            }
+
+            // Validar moviment segons la peça
+            if (!validatePieceMovement(piece, originRow, originCol, destRow, destCol)) {
+                return false;
+            }
+        }
         // Actualitzar el tauler
         updateBoard(move);
 
@@ -243,6 +274,7 @@ public class escacs {
         }
 
         moveHistory.add(playerName + " (" + color + "): " + move);
+
         return true;
     }
 
@@ -279,10 +311,6 @@ public class escacs {
         char rank = coord.charAt(1); // número
 
         // Validar que la columna sigui entre 'a' i 'h'
-        if (file < 'a' || file > 'h' || rank < '1' || rank > '8') {
-            return null; // Coordenades invàlides
-        }
-
         // Validar que la fila sigui entre '1' i '8'
         if (file < 'a' || file > 'h' || rank < '1' || rank > '8') {
             return null; // Coordenades invàlides
