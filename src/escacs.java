@@ -376,7 +376,7 @@ public class escacs {
         } else {
             rowDirection = -1;
         }
-        
+
         int colDirection = 0;
         if (destCol > originCol) {
             colDirection = 1;
@@ -400,7 +400,21 @@ public class escacs {
     }
 
     public boolean validateReina(int originRow, int originCol, int destRow, int destCol) {
-        return true;
+        // Moviment en línia recta (com torre)
+        if (originRow == destRow || originCol == destCol) {
+            return validateTorre(originRow, originCol, destRow, destCol);
+        }
+
+        // Moviment en diagonal (com alfil)
+        int rowDiff = Math.abs(destRow - originRow);
+        int colDiff = Math.abs(destCol - originCol);
+
+        if (rowDiff == colDiff) {
+            return validateAlfil(originRow, originCol, destRow, destCol);
+        }
+
+        System.out.println("ERROR: La reina es mou en línia recta o en diagonal.");
+        return false;
     }
 
     public boolean validateRei(int originRow, int originCol, int destRow, int destCol) {
