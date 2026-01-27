@@ -7,6 +7,7 @@ public class escacs {
     // Arrays i llistes
     private char[][] board;
     private ArrayList<String> players;
+    private ArrayList<String> moveHistory;
 
     // Variables globals
     private String playerWhite;
@@ -18,9 +19,34 @@ public class escacs {
     }
 
     public void start() {
-        gameBoard();
-        getPlayersName();
-        playGame();
+        boolean playAgain = false;
+
+        while (!playAgain) {
+            gameBoard();
+
+            if (moveHistory == null) {
+                // Primera partida
+                getPlayersName();
+            } else {
+                // Partides següents
+                System.out.print("\nMateixos jugadors? (s/n): ");
+                String answer = sc.nextLine();
+                if (!answer.equalsIgnoreCase("si")) {
+                    getPlayersName();
+                }
+            }
+
+            moveHistory = new ArrayList<>();
+            playGame();
+            showMoveHistory();
+
+            System.out.print("\nVoleu jugar una altra partida? (si/no): ");
+            String answer = sc.nextLine();
+            playAgain = answer.equalsIgnoreCase("si");
+        }
+
+        System.out.println("\nGràcies per jugar!");
+        sc.close();
     }
 
     public void gameBoard() {
@@ -203,6 +229,20 @@ public class escacs {
 
         // Actualitzar el tauler
         updateBoard(move);
+
+        // Guardar moviment a l'historial
+        String playerName;
+        String color;
+
+        if (whiteTurn) {
+            playerName = playerWhite;
+            color = "blanques";
+        } else {
+            playerName = playerBlack;
+            color = "negres";
+        }
+
+        moveHistory.add(playerName + " (" + color + "): " + move);
         return true;
     }
 
@@ -427,6 +467,18 @@ public class escacs {
         } else {
             System.out.println("ERROR: El rei només es pot moure 1 casella.");
             return false;
+        }
+    }
+
+    public void showMoveHistory() {
+        System.out.println("\n=== HISTORIAL DE MOVIMENTS ===");
+
+        if (moveHistory.isEmpty()) {
+            System.out.println("No s'han fet moviments.");
+        } else {
+            for (int i = 0; i < moveHistory.size(); i++) {
+                System.out.println((i + 1) + ". " + moveHistory.get(i));
+            }
         }
     }
 }
